@@ -18,19 +18,15 @@ class SwitchSaveImage(SaveImage):
         return {
             "required": {
                 "images": ("IMAGE", ),
-                # Add the boolean switch widget directly to the node
                 "switch": ("BOOLEAN", {"default": True}),
                 "filename_prefix": ("STRING", {"default": "ComfyUI"})
             },
-            # Hidden inputs are required to pass workflow metadata into the saved PNG
             "hidden": {
                 "prompt": "PROMPT", 
                 "extra_pnginfo": "EXTRA_PNGINFO"
             },
         }
 
-    # SaveImage core node has RETURN_TYPES = () and OUTPUT_NODE = True implicitly by its nature
-    
     FUNCTION = "save_images_switch"
     CATEGORY = "utils"
 
@@ -41,13 +37,13 @@ class SwitchSaveImage(SaveImage):
         If False, returns an empty dict (no UI update, no file saved).
         """
         if not switch:
-            # Return empty dictionary to ComfyUI (means no UI preview update, and skips saving)
             return {}
         
-        # If switch is ON, delegate to standard ComfyUI SaveImage logic
-        return super().save_images(
+        super().save_images(
             images=images, 
             filename_prefix=filename_prefix, 
             prompt=prompt, 
             extra_pnginfo=extra_pnginfo
         )
+
+        return {}
