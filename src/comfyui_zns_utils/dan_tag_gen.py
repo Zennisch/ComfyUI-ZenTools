@@ -369,6 +369,7 @@ class DanTagGen(ComfyNodeABC):
                 ),
 
                 # ── Primitives ───────────────────────────────────────────
+                "seed":        (IO.INT,   {"default": -1, "min": -1, "max": 2147483647, "step": 1}),
                 "width":       (IO.INT,   {"default": 1024, "min": 64, "max": 8192, "step": 64}),
                 "height":      (IO.INT,   {"default": 1024, "min": 64, "max": 8192, "step": 64}),
                 "temperature": (IO.FLOAT, {"default": 1.35, "min": 0.1, "max": 2.0,  "step": 0.05}),
@@ -399,6 +400,7 @@ class DanTagGen(ComfyNodeABC):
         characters:     str,
         copyrights:     str,
         blacklist:      str,
+        seed:           int,
         width:          int,
         height:         int,
         temperature:    float,
@@ -408,6 +410,10 @@ class DanTagGen(ComfyNodeABC):
         max_retry:      int,
     ) -> tuple[str, str]:
 
+        # ── Set random seed for reproducibility ──────────────────────────
+        if seed != -1:
+            torch.manual_seed(seed)
+        
         # ── Parse & validate text-box inputs ─────────────────────────────
         parsed_special = self._parse_tags(special_tags, field_name="special_tags")
         parsed_general = general.strip()
