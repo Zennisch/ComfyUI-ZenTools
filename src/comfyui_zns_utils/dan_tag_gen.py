@@ -14,10 +14,6 @@ from comfy.comfy_types.node_typing import IO, ComfyNodeABC, InputTypeDict
 from transformers import LlamaForCausalLM, LlamaTokenizer
 
 
-# =============================================================================
-# CONSTANTS
-# =============================================================================
-
 MODELS = [
     "KBlueLeaf/DanTagGen-delta-rev2",
     "KBlueLeaf/DanTagGen-delta",
@@ -26,7 +22,6 @@ MODELS = [
     "KBlueLeaf/DanTagGen-alpha",
 ]
 
-# Models that support the `quality` prompt field
 DELTA_MODELS = {
     "KBlueLeaf/DanTagGen-delta-rev2",
     "KBlueLeaf/DanTagGen-delta",
@@ -62,13 +57,8 @@ SPECIAL_TAGS_SET = {
     "multiple girls", "multiple boys", "1other", "2others",
 }
 
-# Global model cache: { model_name: (tokenizer, model) }
 _MODEL_CACHE: dict = {}
 
-
-# =============================================================================
-# MODEL MANAGEMENT
-# =============================================================================
 
 def get_model(model_name: str):
     """Load model from HuggingFace (or return cached instance)."""
@@ -91,10 +81,6 @@ def get_model(model_name: str):
 
     return _MODEL_CACHE[model_name]
 
-
-# =============================================================================
-# INFERENCE
-# =============================================================================
 
 @torch.no_grad()
 def _generate(
@@ -135,7 +121,6 @@ def _generate(
             output_scores=True,
         )
 
-    # Decode the full sequence (including prompt) to avoid mid-sequence token artifacts
     return tokenizer.decode(output.sequences[0])
 
 
@@ -167,7 +152,7 @@ def _tag_gen(
     prev_extra_count: int       = -1
     original_prompt:  str       = prompt
 
-    for _ in range(max_retry * 10):  # absolute hard cap
+    for _ in range(max_retry * 10):
         llm_gen = _generate(
             model=model,
             tokenizer=tokenizer,
@@ -190,14 +175,12 @@ def _tag_gen(
             )
         )
 
-        # Merge: keep existing accumulated tags, append only genuinely new ones
         seen = set(extra_tokens)
         for tok in new_tokens:
             if tok not in seen:
                 extra_tokens.append(tok)
                 seen.add(tok)
 
-        # Rebuild llm_gen so the next prompt reflects all accumulated tags
         prefix  = llm_gen[: llm_gen.find("<|input_end|>") + len("<|input_end|>")]
         llm_gen = prefix + " " + ", ".join(extra_tokens)
 
@@ -212,7 +195,6 @@ def _tag_gen(
             if stuck_count >= max_retry:
                 print(f"  [DanTagGen] Stopping early: no progress after {max_retry} retries")
                 break
-            # Reset to original prompt seeded with shuffled accumulated tags
             shuffled = extra_tokens.copy()
             shuffle(shuffled)
             base   = original_prompt.split("<|input_end|>")[0]
@@ -225,10 +207,6 @@ def _tag_gen(
 
     return llm_gen, extra_tokens
 
-
-# =============================================================================
-# PROMPT BUILDING & OUTPUT FORMATTING
-# =============================================================================
 
 def _build_prompt(
     is_delta:     bool,
@@ -301,10 +279,6 @@ def _format_output(
     return out
 
 
-# =============================================================================
-# COMFYUI NODE
-# =============================================================================
-
 class DanTagGen(ComfyNodeABC):
     """
     Generates Danbooru-style tags using KBlueLeaf's DanTagGen models.
@@ -318,7 +292,6 @@ class DanTagGen(ComfyNodeABC):
     def INPUT_TYPES(cls) -> InputTypeDict:
         return {
             "required": {
-                # ── Selects ──────────────────────────────────────────────
                 "model_name": (MODELS, {"default": MODELS[0]}),
                 "quality":    (QUALITY_TAGS, {"default": "masterpiece"}),
                 "rating":     (RATING_TAGS,  {"default": "safe"}),
@@ -327,8 +300,6 @@ class DanTagGen(ComfyNodeABC):
                     {"default": "long"},
                 ),
 
-                # ── Text boxes ───────────────────────────────────────────
-                # special_tags: comma-separated, e.g. "1girl, solo"
                 "special_tags": (
                     IO.STRING,
                     {
@@ -337,7 +308,6 @@ class DanTagGen(ComfyNodeABC):
                         "tooltip":   "Comma-separated character count tags, e.g. '1girl, solo'",
                     },
                 ),
-                # general: seed tags for the model, comma-separated
                 "general": (
                     IO.STRING,
                     {
@@ -358,7 +328,6 @@ class DanTagGen(ComfyNodeABC):
                     IO.STRING,
                     {"default": "", "multiline": False},
                 ),
-                # blacklist: comma-separated tags to exclude from output
                 "blacklist": (
                     IO.STRING,
                     {
@@ -368,7 +337,6 @@ class DanTagGen(ComfyNodeABC):
                     },
                 ),
 
-                # ── Primitives ───────────────────────────────────────────
                 "seed":        (IO.INT,   {"default": -1, "min": -1, "max": 2147483647, "step": 1}),
                 "width":       (IO.INT,   {"default": 1024, "min": 64, "max": 8192, "step": 64}),
                 "height":      (IO.INT,   {"default": 1024, "min": 64, "max": 8192, "step": 64}),
@@ -386,7 +354,6 @@ class DanTagGen(ComfyNodeABC):
     FUNCTION  = "generate"
     CATEGORY  = "conditioning/utils"
 
-    # -------------------------------------------------------------------------
 
     def generate(
         self,
@@ -410,11 +377,9 @@ class DanTagGen(ComfyNodeABC):
         max_retry:      int,
     ) -> tuple[str, str]:
 
-        # ── Set random seed for reproducibility ──────────────────────────
         if seed != -1:
             torch.manual_seed(seed)
         
-        # ── Parse & validate text-box inputs ─────────────────────────────
         parsed_special = self._parse_tags(special_tags, field_name="special_tags")
         parsed_general = general.strip()
         parsed_black   = set(self._parse_tags(blacklist, field_name="blacklist", allow_empty=True))
@@ -425,7 +390,6 @@ class DanTagGen(ComfyNodeABC):
                 "Provide at least one tag, e.g. '1girl'."
             )
 
-        # ── Derived values ────────────────────────────────────────────────
         is_delta     = model_name in DELTA_MODELS
         aspect_ratio = width / height
         len_target   = TARGET_LENGTH[target]
@@ -434,7 +398,6 @@ class DanTagGen(ComfyNodeABC):
             t.strip() for t in parsed_general.strip(",").split(",") if t.strip()
         ]
 
-        # ── Build prompt ──────────────────────────────────────────────────
         prompt = _build_prompt(
             is_delta=is_delta,
             quality=quality,
@@ -450,10 +413,8 @@ class DanTagGen(ComfyNodeABC):
 
         print(f"[DanTagGen] Prompt:\n{prompt}")
 
-        # ── Load model (cached) ───────────────────────────────────────────
         tokenizer, model = get_model(model_name)
 
-        # ── Generate ──────────────────────────────────────────────────────
         _, extra_tokens = _tag_gen(
             model=model,
             tokenizer=tokenizer,
@@ -468,7 +429,6 @@ class DanTagGen(ComfyNodeABC):
             max_retry=max_retry,
         )
 
-        # ── Format outputs ────────────────────────────────────────────────
         formatted = _format_output(
             special_tags=parsed_special,
             extra_tokens=extra_tokens,
@@ -484,9 +444,6 @@ class DanTagGen(ComfyNodeABC):
 
         return (formatted, raw_tags)
 
-    # -------------------------------------------------------------------------
-    # Helpers
-    # -------------------------------------------------------------------------
 
     @staticmethod
     def _parse_tags(
@@ -511,10 +468,7 @@ class DanTagGen(ComfyNodeABC):
         for raw in value.split(","):
             tag = raw.strip()
             if not tag:
-                # Tolerate trailing commas / double commas
                 continue
-            # Reject entries that look suspiciously non-tag-like
-            # (newlines inside a single tag indicate a paste/formatting error)
             if "\n" in tag:
                 raise ValueError(
                     f"[DanTagGen] '{field_name}' contains a newline inside a tag: {repr(tag)}. "
