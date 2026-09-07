@@ -1,6 +1,6 @@
 {
-    "python.defaultInterpreterPath": "path/to/ComfyUI/.venv/Scripts/python.exe",
+    "python.defaultInterpreterPath": "C:/Users/<USERNAME>/AppData/Local/Comfy-Desktop/ComfyUI-Installs/ComfyUI/ComfyUI/.venv/Scripts/python.exe",
     "python.analysis.extraPaths": [
-        "C:/Users/<USERNAME>/ComfyUI-Installs/ComfyUI/ComfyUI"
+        "C:/Users/<USERNAME>/AppData/Local/Comfy-Desktop/ComfyUI-Installs/ComfyUI/ComfyUI"
     ]
 }
