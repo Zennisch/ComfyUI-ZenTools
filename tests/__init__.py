@@ -1,1 +1,1 @@
-"""Unit test package for comfyui_zns_utils."""
+"""Unit test package for comfyui_zen_tools."""

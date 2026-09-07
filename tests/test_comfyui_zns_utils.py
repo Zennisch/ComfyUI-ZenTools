@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-"""Tests for `comfyui_zns_utils` package."""
+"""Tests for `comfyui_zen_tools` package."""
 
 import pytest
-from src.comfyui_zns_utils.nodes import Example
+from src.comfyui_zen_tools.nodes import Example
 
 @pytest.fixture
 def example_node():

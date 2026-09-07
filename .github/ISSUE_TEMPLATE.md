@@ -1,4 +1,4 @@
-* comfyui_zns_utils version:
+* comfyui_zen_tools version:
 * Python version:
 * Operating System:
 

@@ -3,7 +3,7 @@
 """Tests for SwitchAny node and validation utilities."""
 
 import pytest
-from src.comfyui_zns_utils.switch_any import (
+from src.comfyui_zen_tools.switch_any import (
     SwitchAny,
     find_switch_any,
     resolve_switch_boolean,

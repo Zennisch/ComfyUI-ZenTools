@@ -3,7 +3,7 @@ requires = ["setuptools>=70.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "comfyui_zns_utils"
+name = "ComfyUI-ZenTools"
 version = "0.0.1"
 description = "Empty"
 authors = [
@@ -14,7 +14,8 @@ license = {text = "Apache Software License 2.0"}
 requires-python = ">=3.10"
 classifiers = []
 dependencies = [
-
+    "torch",
+    "transformers"
 ]
 
 
@@ -30,9 +31,9 @@ dev = [
 ]
 
 [project.urls]
-Repository = "https://github.com/zennisch/comfyui_zns_utils"
-BugTracker = "https://github.com/zennisch/comfyui_zns_utils/issues"
-Documentation = "https://github.com/zennisch/comfyui_zns_utils/wiki"
+Repository = "https://github.com/Zennisch/ComfyUI-ZenTools"
+BugTracker = "https://github.com/Zennisch/ComfyUI-ZenTools/issues"
+Documentation = "https://github.com/Zennisch/ComfyUI-ZenTools/wiki"
 
 
 [tool.comfy]
@@ -40,7 +41,7 @@ PublisherId = "zennisch"
 DisplayName = "ComfyUI-ZNS-Utils"
 Icon = ""
 Tags = []
-Repository = "https://github.com/zennisch/comfyui_zns_utils"
+Repository = "https://github.com/Zennisch/ComfyUI-ZenTools"
 
 includes = []
 

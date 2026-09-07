@@ -85,7 +85,7 @@ Configuration node for image dimensions and scaling.
 To install the dev dependencies and pre-commit (will run the ruff hook), do:
 
 ```bash
-cd comfyui_zns_utils
+cd comfyui_zen_tools
 pip install -e .[dev]
 pre-commit install
 ```
@@ -106,7 +106,7 @@ git push
 
 ## Writing custom nodes
 
-An example custom node is located in [node.py](src/comfyui_zns_utils/nodes.py). To learn more, read the [docs](https://docs.comfy.org/essentials/custom_node_overview).
+An example custom node is located in [node.py](src/comfyui_zen_tools/nodes.py). To learn more, read the [docs](https://docs.comfy.org/essentials/custom_node_overview).
 
 
 ## Tests
